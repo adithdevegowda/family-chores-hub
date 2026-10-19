@@ -67,12 +67,11 @@ if(path==='/api/chore'&&req.method==='POST'){
  if(!(await db.prepare('SELECT id FROM members WHERE id=? AND active=1').bind(body.member_id).first()))return fail('Unbekanntes Mitglied');
  const id=uuid();await db.prepare("INSERT INTO chores(id,title,description,category,member_id,amount,due,recurring,status,published,created) VALUES(?,?,?,?,?,?,?,?,?,?,?)").bind(id,body.title.trim().slice(0,120),String(body.description||'').slice(0,500),String(body.category||'Other').slice(0,30),body.member_id,amount,body.due,'none','open',1,now()).run();return json({ok:true,id});
 }
-const match=path.match(/^\/api\/chore\/([a-f0-9-]+)\/(submit|approve|miss|excuse|delete|overrule)$/);
+const match=path.match(/^\/api\/chore\/([a-f0-9-]+)\/(submit|approve|miss|excuse|overrule|undoapprove)$/);
 if(match&&req.method==='POST'){
  const [,id,action]=match;const c=await db.prepare('SELECT * FROM chores WHERE id=?').bind(id).first();if(!c)return fail('Aufgabe nicht gefunden',404);
  if(action==='submit') {if(c.member_id!==user.id&&!host)return fail('Keine Berechtigung',403);if(!['open','rejected'].includes(c.status))return fail('Nicht mehr offen');await db.prepare("UPDATE chores SET status='submitted' WHERE id=? AND status IN ('open','rejected')").bind(id).run();return json({ok:true});}
  if(!host)return fail('Nur Host',403);
- if(action==='delete'){if(c.paid||c.status==='missed')return fail('Chores with financial transactions cannot be deleted');await db.prepare('DELETE FROM chores WHERE id=?').bind(id).run();return json({ok:true});}
  if(action==='excuse'||action==='miss'){
  if(c.paid||!['open','submitted','rejected'].includes(c.status))return fail('Chore already closed');
  if(action==='excuse'){await db.prepare("UPDATE chores SET status='excused' WHERE id=? AND paid=0 AND status IN ('open','submitted','rejected')").bind(id).run();return json({ok:true});}
@@ -89,6 +88,16 @@ if(match&&req.method==='POST'){
  await db.batch([
  db.prepare("INSERT INTO ledger(id,member_id,amount,type,chore_id,note,created) SELECT ?,member_id,?,'penalty_reversal',id,'Host reversed missed penalty: '||title,? FROM chores WHERE id=? AND status='missed'").bind(uuid(),-penalty.amount,now(),id),
  db.prepare("UPDATE chores SET status='excused' WHERE id=? AND status='missed'").bind(id)
+ ]);
+ return json({ok:true});
+ }
+ if(action==='undoapprove'){
+ if(c.status!=='confirmed'||!c.paid)return fail('Only approved chores can be reversed');
+ const reward=await db.prepare("SELECT amount FROM ledger WHERE chore_id=? AND type='reward'").bind(id).first();
+ if(!reward)return fail('Reward entry missing');
+ await db.batch([
+ db.prepare("INSERT INTO ledger(id,member_id,amount,type,chore_id,note,created) VALUES(?,?,?,'reward_reversal',?,?,?)").bind(uuid(),c.member_id,-reward.amount,id,'Approval reversed by host',now()),
+ db.prepare("UPDATE chores SET status='submitted',paid=0 WHERE id=? AND status='confirmed' AND paid=1").bind(id)
  ]);
  return json({ok:true});
  }
