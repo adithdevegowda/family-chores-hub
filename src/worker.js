@@ -35,7 +35,7 @@ const user=await getUser(req,db);if(!user)return fail('Bitte anmelden',401);cons
 if(path==='/api/state'&&req.method==='GET'){
  const [ms,cs,ls,pi]=await Promise.all([db.prepare('SELECT id,name,role,color,active FROM members').all(),db.prepare('SELECT * FROM chores ORDER BY due ASC').all(),db.prepare('SELECT * FROM ledger ORDER BY created DESC LIMIT 500').all(),poolInfo(db)]);
  const code=host?await db.prepare("SELECT val FROM config WHERE key='signup_code'").first():null;
- const templatesRow=host?await db.prepare("SELECT val FROM config WHERE key='chore_templates'").first():null;
+ const templatesRow=await db.prepare("SELECT val FROM config WHERE key='chore_templates'").first();
  let templates=STANDARD_CHORES;if(templatesRow){try{const saved=JSON.parse(templatesRow.val);templates=[...STANDARD_CHORES.filter(x=>!saved.some(t=>t.title.toLowerCase()===x.title.toLowerCase())),...saved]}catch{templates=STANDARD_CHORES}}
  return json({user:userView(user),members:ms.results,chores:cs.results.map(c=>({...c,amount:c.amount/100})),ledger:ls.results.map(t=>({...t,amount:t.amount/100})),pool:Object.fromEntries(Object.entries(pi).map(([k,v])=>[k,v/100])),signupCode:code?.val||null,templates});
 }
@@ -63,9 +63,18 @@ if(path==='/api/template'&&req.method==='POST'){
  return json({ok:true});
 }
 if(path==='/api/chore'&&req.method==='POST'){
- if(!host)return fail('Nur Host',403);const amount=Math.round(Number(body.amount)*100);if(!money(amount)||!/^\d{4}-\d{2}-\d{2}$/.test(body.due||'')||!body.title?.trim())return fail('Ungültige Aufgabe');
+ let chore=body;
+ if(!host){
+ const row=await db.prepare("SELECT val FROM config WHERE key='chore_templates'").first();
+ let saved=[];try{saved=JSON.parse(row?.val||'[]')}catch{return fail('Invalid chore library')}
+ const templates=[...STANDARD_CHORES.filter(x=>!saved.some(t=>t.title.toLowerCase()===x.title.toLowerCase())),...saved];
+ const t=templates.find(x=>x.id===body.template_id);
+ if(!t)return fail('Choose a chore from the library',403);
+ chore={...body,title:t.title,description:t.description,category:t.category,amount:t.amount};
+ }
+ const amount=Math.round(Number(chore.amount)*100);if(!money(amount)||!/^\d{4}-\d{2}-\d{2}$/.test(chore.due||'')||!chore.title?.trim())return fail('Invalid chore');
  if(!(await db.prepare('SELECT id FROM members WHERE id=? AND active=1').bind(body.member_id).first()))return fail('Unbekanntes Mitglied');
- const id=uuid();await db.prepare("INSERT INTO chores(id,title,description,category,member_id,amount,due,recurring,status,published,created) VALUES(?,?,?,?,?,?,?,?,?,?,?)").bind(id,body.title.trim().slice(0,120),String(body.description||'').slice(0,500),String(body.category||'Other').slice(0,30),body.member_id,amount,body.due,'none','open',1,now()).run();return json({ok:true,id});
+ const id=uuid();await db.prepare("INSERT INTO chores(id,title,description,category,member_id,amount,due,recurring,status,published,created) VALUES(?,?,?,?,?,?,?,?,?,?,?)").bind(id,chore.title.trim().slice(0,120),String(chore.description||'').slice(0,500),String(chore.category||'Other').slice(0,30),body.member_id,amount,body.due,'none','open',1,now()).run();return json({ok:true,id});
 }
 const match=path.match(/^\/api\/chore\/([a-f0-9-]+)\/(submit|approve|miss|overrule|undoapprove)$/);
 if(match&&req.method==='POST'){
