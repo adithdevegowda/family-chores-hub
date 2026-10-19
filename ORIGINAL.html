@@ -1,0 +1,888 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Family Chores Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: sticky top bar + tab nav, single centred column of cards; admin work happens in full-width panels */
+:root{
+  --bg:#f6f6f4; --surface:#ffffff; --surface-2:#eeeeea; --line:#dcdcd5;
+  --fg:#23241f; --fg-dim:#6b6d64; --fg-faint:#8e9087;
+  --accent:#1d6f63; --accent-soft:#ddeeea; --accent-fg:#ffffff;
+  --good:#2f7d32; --good-soft:#e2f0e2; --warn:#9a6212; --warn-soft:#f8ecd8; --bad:#a63a2f; --bad-soft:#f8e3e0;
+  --radius:14px; --shadow:0 1px 2px rgba(35,36,31,.06),0 6px 20px rgba(35,36,31,.05);
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Public Sans",ui-sans-serif,system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#17181a; --surface:#1f2124; --surface-2:#282b2e; --line:#36393d;
+  --fg:#eceee9; --fg-dim:#a4a8a2; --fg-faint:#80857f;
+  --accent:#4fb3a1; --accent-soft:#1c3a36; --accent-fg:#10201d;
+  --good:#6fc072; --good-soft:#1e3220; --warn:#dca94f; --warn-soft:#39300f;
+  --bad:#e58175; --bad-soft:#3b211d;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#17181a; --surface:#1f2124; --surface-2:#282b2e; --line:#36393d;
+  --fg:#eceee9; --fg-dim:#a4a8a2; --fg-faint:#80857f;
+  --accent:#4fb3a1; --accent-soft:#1c3a36; --accent-fg:#10201d;
+  --good:#6fc072; --good-soft:#1e3220; --warn:#dca94f; --warn-soft:#39300f;
+  --bad:#e58175; --bad-soft:#3b211d;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+h1,h2,h3,h4{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.015em}
+h1{font-size:1.5rem}h2{font-size:1.15rem}h3{font-size:1rem}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{width:100%;max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.muted{color:var(--fg-dim)}
+.faint{color:var(--fg-faint);font-size:.82rem}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--fg-faint);font-weight:600}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:8px;margin-right:auto}
+.brand .dot{width:10px;height:10px;border-radius:3px;background:var(--accent);display:inline-block}
+.who{display:flex;align-items:center;gap:8px}
+nav.tabs{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:calc(env(safe-area-inset-top,0px) + 53px);z-index:19}
+nav.tabs .wrap{display:flex;gap:2px;overflow-x:auto;padding-block:0}
+nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 12px;cursor:pointer;color:var(--fg-dim);white-space:nowrap;font-weight:500}
+nav.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+nav.tabs button:hover{color:var(--fg)}
+
+main{padding-block:20px 56px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.card.flat{box-shadow:none}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.card-h h1,.card-h h2,.card-h h3{margin-right:auto}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.tile .v{font-family:var(--display);font-size:1.7rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile .l{font-size:.78rem;color:var(--fg-dim);margin-top:2px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer;font-weight:500;transition:background .12s,border-color .12s}
+.btn:hover{border-color:var(--fg-faint)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:none}
+.btn.danger{color:var(--bad);border-color:var(--bad-soft)}
+.btn.sm{padding:4px 9px;font-size:.84rem;border-radius:7px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}
+input.mini,select.mini{padding:3px 6px;border-radius:7px;font-size:.84rem;width:auto}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--fg-dim);min-width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row>*{min-width:0}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:.75rem;font-weight:600;background:var(--surface-2);color:var(--fg-dim);white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+.av{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-size:.85rem;color:#fff;flex:none}
+.av.lg{width:46px;height:46px;border-radius:12px;font-size:1.15rem}
+.bar{height:7px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .4s ease}
+.sep{height:1px;background:var(--line);margin:12px 0}
+
+.chore{display:flex;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
+.chore .main{flex:1 1 180px;min-width:0}
+.chore .t{font-weight:600;overflow-wrap:anywhere}
+.chore .acts{display:flex;gap:6px;flex-wrap:wrap}
+.chore.done{opacity:.72}
+.list{display:flex;flex-direction:column;gap:8px}
+.empty{text-align:center;padding:26px 14px;color:var(--fg-dim);border:1px dashed var(--line);border-radius:var(--radius)}
+.empty strong{display:block;font-family:var(--display);color:var(--fg);margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-faint);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.tblwrap{overflow-x:auto}
+.amt.pos{color:var(--good);font-weight:600}
+.amt.neg{color:var(--bad);font-weight:600}
+
+.quick{background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:12px}
+.quick .row{align-items:center}
+.quick input,.quick select{background:var(--surface)}
+
+.scrim{position:fixed;inset:0;background:rgba(10,12,12,.45);display:grid;place-items:center;padding:16px;z-index:40}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:16px;width:min(560px,100%);max-height:86vh;overflow:auto;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;z-index:50;font-size:.88rem;box-shadow:var(--shadow)}
+.banner{background:var(--warn-soft);color:var(--warn);border:1px solid currentColor;border-radius:11px;padding:10px 12px;font-size:.86rem}
+.gate{min-height:70vh;display:grid;place-items:center}
+.gate .box{width:min(430px,100%);text-align:center}
+.pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pinpad button{padding:14px;font-size:1.1rem;font-family:var(--display)}
+.pindots{display:flex;gap:8px;justify-content:center;margin:14px 0}
+.pindots i{width:11px;height:11px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line)}
+.pindots i.on{background:var(--accent);border-color:var(--accent)}
+.people{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px}
+.person{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 8px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);cursor:pointer}
+.person:hover{border-color:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:560px){h1{font-size:1.3rem}.tile .v{font-size:1.45rem}}
+</style>
+
+<header class="top"><div class="wrap">
+  <span class="brand"><span class="dot"></span>Family Chores Hub</span>
+  <span class="who" id="who"></span>
+</div></header>
+<nav class="tabs" id="tabs" hidden><div class="wrap" id="tabsInner"></div></nav>
+<main><div class="wrap" id="view"><div class="empty"><strong>Loading</strong>One moment.</div></div></main>
+
+<script>
+/* ========================================================================
+   Family Chores Hub — single-file app, shared db, deterministic ledger.
+   Money rules live in one place (ledger section) so the UI cannot bypass them.
+   ======================================================================== */
+const CATS=["Kitchen","Cleaning","Laundry","Rubbish","Shopping","Garden","Pets","Organising","Other"];
+const STATUS={planned:{l:"Planned",c:""},open:{l:"To do",c:""},in_progress:{l:"In progress",c:"acc"},
+  submitted:{l:"Awaiting approval",c:"warn"},confirmed:{l:"Approved",c:"good"},overdue:{l:"Overdue",c:"bad"},
+  missed:{l:"Not done",c:"bad"},excused:{l:"Excused",c:""},rejected:{l:"Needs rework",c:"warn"}};
+const TXL={deposit:"Pool deposit",reward:"Chore reward",bonus:"Bonus",penalty:"Penalty",
+  payout:"Payout",correction:"Correction",reversal:"Reversal"};
+const AVCOL=["#1d6f63","#8a5a2b","#4a5fa5","#8c3f6b","#2f7d32","#9a6212","#5b4a8f","#a63a2f"];
+const DEFAULTS={weeklyBudget:100,defaultReward:5,tiers:{easy:2,normal:5,hard:10,"very hard":15},
+  penaltyEnabled:true,perfectWeekBonus:0,hostPin:""};
+
+/* ---------- utilities ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const el=(t,a={},...k)=>{const n=document.createElement(t);for(const[p,v]of Object.entries(a)){
+  if(p==="class")n.className=v;else if(p==="html")n.innerHTML=v;else if(p.startsWith("on"))n.addEventListener(p.slice(2),v);
+  else if(v===true)n.setAttribute(p,"");else if(v!==false&&v!=null)n.setAttribute(p,v);}
+  for(const c of k.flat())if(c!=null)n.append(c.nodeType?c:document.createTextNode(c));return n;};
+const eur=n=>(Math.round(n*100)/100).toLocaleString("en-IE",{style:"currency",currency:"EUR"});
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+function toast(m){const t=el("div",{class:"toast"},m);document.body.append(t);setTimeout(()=>t.remove(),2600);}
+
+/* Europe/Berlin calendar helpers. Dates are plain YYYY-MM-DD strings so a week
+   never shifts when someone opens the app from another timezone. */
+function berlinToday(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Berlin",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
+const D=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(Date.UTC(y,m-1,d));};
+const S=d=>d.toISOString().slice(0,10);
+const addDays=(s,n)=>{const d=D(s);d.setUTCDate(d.getUTCDate()+n);return S(d);};
+function mondayOf(s){const d=D(s);const w=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-w);return S(d);}
+function isoWeekId(s){const d=D(s);const day=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-day+3);
+  const y=d.getUTCFullYear();const jan4=Date.UTC(y,0,4);const j=new Date(jan4);const jd=(j.getUTCDay()+6)%7;
+  const w1=new Date(jan4);w1.setUTCDate(w1.getUTCDate()-jd+3);
+  const n=1+Math.round((d-w1)/(7*864e5));return y+"-W"+String(n).padStart(2,"0");}
+const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const dayShort=s=>DAYS[(D(s).getUTCDay()+6)%7].slice(0,3);
+const fmtDate=s=>s?D(s).toLocaleDateString("en-GB",{day:"2-digit",month:"short",timeZone:"UTC"}):"";
+const fmtDT=ms=>new Date(ms).toLocaleString("en-GB",{timeZone:"Europe/Berlin",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+
+/* ---------- state ---------- */
+let DB=null,USERCAP=null,canWrite=true;
+const St={members:[],chores:[],weeks:[],tx:[],templates:[],settings:{...DEFAULTS},ready:false};
+let session={memberId:null,admin:false};
+let tab="dash",filters={member:"",cat:"",status:"",view:"person"},profileId=null,planWeek=null;
+
+try{const raw=localStorage.getItem("fch.session");if(raw)session=JSON.parse(raw);}catch(e){}
+const saveSession=()=>{try{localStorage.setItem("fch.session",JSON.stringify(session));}catch(e){}};
+
+const me=()=>St.members.find(m=>m.id===session.memberId)||null;
+const isHost=()=>{const m=me();return !!(m&&(m.role==="host"||session.admin));};
+const memberById=id=>St.members.find(m=>m.id===id)||null;
+const mName=id=>memberById(id)?.name||"—";
+const activeMembers=()=>St.members.filter(m=>m.active!==false);
+
+/* ---------- ledger: the only place money is created or removed ----------
+   Every movement is one append-only transaction with a signed amount.
+   A member's balance is always the sum of their transactions, never a stored
+   counter, so two simultaneous actions can never disagree about a balance. */
+const balanceOf=id=>St.tx.filter(t=>t.member===id).reduce((a,t)=>a+t.amount,0);
+const poolTotal=()=>St.tx.reduce((a,t)=>a+(t.type==="deposit"?t.amount:0)+(t.type==="payout"?t.amount:0),0);
+const earnedUnpaid=()=>St.members.reduce((a,m)=>a+balanceOf(m.id),0);
+const PENDING=["planned","open","in_progress","submitted","rejected","overdue"];
+const reservedAmount=()=>St.chores.filter(c=>c.published&&PENDING.includes(effStatus(c))).reduce((a,c)=>a+(c.amount||0),0);
+const availableBudget=()=>poolTotal()-earnedUnpaid()-reservedAmount();
+
+async function addTx(o){
+  const ref=DB.collection("transactions").doc();
+  const body={id:ref.id,type:o.type,amount:Math.round(o.amount*100)/100,currency:"EUR",member:o.member||null,
+    chore:o.chore||null,weekId:o.weekId||null,reason:o.reason||"",by:session.memberId||null,ts:Date.now(),
+    balanceBefore:o.member?Math.round(balanceOf(o.member)*100)/100:null};
+  body.balanceAfter=o.member?Math.round((body.balanceBefore+body.amount)*100)/100:null;
+  await ref.set(body);return ref.id;
+}
+
+/* A chore is paid exactly once: the chore document carries rewardTx, and a
+   second payment is refused whenever that field is already set. */
+async function approveChore(c){
+  if(!isHost())return toast("Only the host can approve chores.");
+  if(c.rewardTx)return toast("This chore has already been paid.");
+  const fresh=await DB.collection("chores").doc(c.id).get();
+  if(fresh.exists&&fresh.data().rewardTx)return toast("This chore has already been paid.");
+  const txId=await addTx({type:"reward",amount:c.amount,member:c.memberId,chore:c.id,weekId:c.weekId,reason:"Approved: "+c.title});
+  await DB.collection("chores").doc(c.id).update({status:"confirmed",rewardTx:txId,confirmedAt:Date.now()});
+  toast(eur(c.amount)+" credited to "+mName(c.memberId)+".");
+}
+async function revokeApproval(c){
+  if(!isHost()||!c.rewardTx)return;
+  await addTx({type:"reversal",amount:-c.amount,member:c.memberId,chore:c.id,weekId:c.weekId,reason:"Approval withdrawn: "+c.title});
+  await DB.collection("chores").doc(c.id).update({status:"rejected",rewardTx:null,confirmedAt:null});
+  toast("Reward reversed.");
+}
+/* A missed chore costs exactly what it would have paid. The only limit is the
+   balance itself: a penalty never pushes anyone below zero. */
+function penaltyFor(c){
+  if(!St.settings.penaltyEnabled)return 0;
+  return Math.min(c.amount||0,Math.max(0,balanceOf(c.memberId)));
+}
+async function markMissed(c){
+  if(!isHost())return;
+  if(c.penaltyTx)return toast("This chore has already been penalised.");
+  const p=penaltyFor(c),full=c.amount||0;
+  let txId=null;
+  if(p>0)txId=await addTx({type:"penalty",amount:-p,member:c.memberId,chore:c.id,weekId:c.weekId,reason:"Not done: "+c.title});
+  await DB.collection("chores").doc(c.id).update({status:"missed",penaltyTx:txId});
+  if(p>0&&p<full)toast("Marked not done. "+eur(p)+" deducted — the full "+eur(full)+" would have gone below zero.");
+  else if(p>0)toast("Marked not done. "+eur(p)+" deducted.");
+  else toast("Marked not done. No balance to deduct from.");
+}
+
+/* ---------- chore status ---------- */
+function effStatus(c){
+  if(["confirmed","missed","excused","submitted","rejected"].includes(c.status))return c.status;
+  if(c.published&&c.dueDate&&c.dueDate<berlinToday())return "overdue";
+  return c.published?(c.status==="in_progress"?"in_progress":"open"):"planned";
+}
+const weekChores=w=>St.chores.filter(c=>c.weekId===w);
+const curWeek=()=>isoWeekId(berlinToday());
+
+/* ---------- db wiring ---------- */
+async function boot(){
+  DB=await (window.claude?.use?window.claude.use("db"):Promise.resolve(null));
+  USERCAP=await (window.claude?.use?window.claude.use("user"):Promise.resolve(null));
+  if(USERCAP){const w=await USERCAP.can("data.write");if(w===false)canWrite=false;}
+  if(!DB){St.ready=true;render();return;}
+  const sub=(path,key)=>DB.collection(path).onSnapshot(s=>{St[key]=s.docs.map(d=>({id:d.id,...d.data()}));schedule();},
+    e=>{if(e.code==="revoked")canWrite=false;schedule();});
+  sub("members","members");sub("chores","chores");sub("weeks","weeks");sub("transactions","tx");sub("chore_templates","templates");
+  DB.doc("config/settings").onSnapshot(s=>{St.settings={...DEFAULTS,...(s.exists?s.data():{})};schedule();},()=>{});
+  setTimeout(()=>{St.ready=true;schedule();},900);
+}
+let raf=null;function schedule(){St.ready=true;if(raf)return;raf=requestAnimationFrame(()=>{raf=null;render();});}
+async function put(coll,id,data){if(!DB)return toast("This view cannot save changes.");
+  try{await DB.collection(coll).doc(id).set(data);}catch(e){canWrite=false;toast("Could not save — this view has read-only access.");schedule();}}
+async function patch(coll,id,data){if(!DB)return;
+  try{await DB.collection(coll).doc(id).update(data);}catch(e){canWrite=false;toast("Could not save — this view has read-only access.");schedule();}}
+async function setSettings(p){if(!DB)return;const next={...St.settings,...p};St.settings=next;await DB.doc("config/settings").set(next);}
+
+/* ---------- dialog ---------- */
+function dialog(title,bodyFn,onSave,saveLabel="Save"){
+  const scrim=el("div",{class:"scrim",onclick:e=>{if(e.target===scrim)scrim.remove();}});
+  const form=el("div",{class:"stack"});const sheet=el("div",{class:"sheet"},el("h2",{},title),el("div",{style:"height:12px"}),form);
+  const data=bodyFn(form);
+  sheet.append(el("div",{class:"sep"}),el("div",{class:"row",style:"justify-content:flex-end"},
+    el("button",{class:"btn ghost",onclick:()=>scrim.remove()},"Cancel"),
+    el("button",{class:"btn primary",onclick:async()=>{const r=await onSave(data);if(r!==false)scrim.remove();}},saveLabel)));
+  scrim.append(sheet);document.body.append(scrim);
+  const first=sheet.querySelector("input,select,textarea");if(first)first.focus();
+  return scrim;
+}
+function field(parent,label,node){parent.append(el("label",{class:"f"},label,node));return node;}
+const inp=(v="",attrs={})=>el("input",{value:v,...attrs});
+const sel=(opts,v,cls)=>{const s=el("select",cls?{class:cls}:{});for(const o of opts){const[val,lab]=Array.isArray(o)?o:[o,o];
+  s.append(el("option",{value:val,...(String(val)===String(v)?{selected:true}:{})},lab));}return s;};
+
+/* ======================= RENDER ======================= */
+function render(){
+  const v=$("#view");
+  if(!St.ready)return;
+  if(!DB){$("#tabs").hidden=true;$("#who").replaceChildren();return v.replaceChildren(gateNoDb());}
+  if(St.members.length===0){$("#tabs").hidden=true;$("#who").replaceChildren();return v.replaceChildren(setupWizard());}
+  if(!me()){$("#tabs").hidden=true;$("#who").replaceChildren();return v.replaceChildren(loginScreen());}
+  renderWho();renderTabs();
+  const body={dash:viewDash,mine:viewMine,board:viewBoard,pool:viewPool,people:viewPeople,profile:viewProfile,admin:viewAdmin}[tab]||viewDash;
+  v.replaceChildren(body());
+}
+function renderWho(){
+  const m=me();
+  $("#who").replaceChildren(
+    !canWrite?el("span",{class:"pill warn"},"Read only"):null,
+    el("span",{class:"av",style:"background:"+m.color},m.name[0].toUpperCase()),
+    el("span",{class:"faint",style:"color:var(--fg-dim)"},m.name+(isHost()?" · Host":"")),
+    el("button",{class:"btn sm ghost",onclick:()=>{session={memberId:null,admin:false};saveSession();render();}},"Switch"));
+}
+function renderTabs(){
+  const t=$("#tabs");t.hidden=false;
+  const items=[["dash","Overview"],["mine","My chores"],["board","Chore board"],["pool","Family pool"],["people","Family"]];
+  if(isHost())items.push(["admin","Admin"]);
+  if(tab==="profile")items.push(["profile","Profile"]);
+  $("#tabsInner").replaceChildren(...items.map(([k,l])=>el("button",{"aria-selected":tab===k?"true":"false",
+    onclick:()=>{tab=k;render();window.scrollTo({top:0});}},l)));
+}
+
+/* ---------- gates ---------- */
+function gateNoDb(){
+  return el("div",{class:"gate"},el("div",{class:"box stack"},
+    el("h1",{},"Data not reachable"),
+    el("p",{class:"muted"},"This view cannot open the shared database. Sign in and open the page again through the shared link.")));
+}
+function setupWizard(){
+  const box=el("div",{class:"stack",style:"max-width:560px;margin:0 auto"});
+  box.append(el("h1",{},"Set up"),el("p",{class:"muted"},"Create the host profile. You can add the rest of the family from the Admin tab straight afterwards."));
+  const c=el("div",{class:"card stack"});
+  const name=field(c,"Host name",inp("",{placeholder:"e.g. Sachin"}));
+  const pin=field(c,"Host PIN (4 digits)",inp("",{inputmode:"numeric",maxlength:"4",placeholder:"0000"}));
+  const bud=field(c,"Starting balance in the family pool (€)",inp("100",{type:"number",min:"0",step:"5"}));
+  c.append(el("button",{class:"btn primary",onclick:async()=>{
+    if(!name.value.trim()||!/^\d{4}$/.test(pin.value))return toast("Enter a name and a four-digit PIN.");
+    const id=uid();
+    await put("members",id,{name:name.value.trim(),pin:pin.value,role:"host",color:AVCOL[0],active:true,createdAt:Date.now()});
+    await setSettings({hostPin:pin.value});
+    const start=parseFloat(bud.value||"0");
+    if(start>0)await addTx({type:"deposit",amount:start,reason:"Starting balance"});
+    session={memberId:id,admin:true};saveSession();toast("Welcome.");schedule();
+  }},"Finish setup"));
+  box.append(c);return box;
+}
+function loginScreen(){
+  const box=el("div",{class:"gate"});const inner=el("div",{class:"box stack"});
+  inner.append(el("h1",{},"Who are you?"));
+  const people=el("div",{class:"people"});
+  for(const m of activeMembers())
+    people.append(el("div",{class:"person",role:"button",tabindex:"0",onclick:()=>askPin(m),
+      onkeydown:e=>{if(e.key==="Enter")askPin(m);}},
+      el("span",{class:"av lg",style:"background:"+m.color},m.name[0].toUpperCase()),
+      el("strong",{},m.name),m.role==="host"?el("span",{class:"pill acc"},"Host"):null));
+  inner.append(people);box.append(inner);return box;
+}
+function askPin(m){
+  let buf="";
+  const dots=el("div",{class:"pindots"});
+  const draw=()=>dots.replaceChildren(...[0,1,2,3].map(i=>el("i",{class:buf.length>i?"on":""})));
+  draw();
+  const scrim=el("div",{class:"scrim",onclick:e=>{if(e.target===scrim)scrim.remove();}});
+  const pad=el("div",{class:"pinpad"});
+  const check=()=>{if(buf===String(m.pin)){session={memberId:m.id,admin:m.role==="host"};saveSession();scrim.remove();tab="dash";render();}
+    else{buf="";draw();toast("That PIN is not right.");}};
+  const press=d=>{if(buf.length<4)buf+=d;draw();if(buf.length===4)check();};
+  for(const d of["1","2","3","4","5","6","7","8","9"])pad.append(el("button",{class:"btn",onclick:()=>press(d)},d));
+  pad.append(el("button",{class:"btn ghost",onclick:()=>{buf=buf.slice(0,-1);draw();}},"←"),
+    el("button",{class:"btn",onclick:()=>press("0")},"0"),
+    el("button",{class:"btn ghost",onclick:()=>scrim.remove()},"✕"));
+  scrim.append(el("div",{class:"sheet",style:"max-width:330px;text-align:center"},
+    el("h2",{},m.name),el("p",{class:"faint"},"Enter PIN"),dots,pad));
+  document.body.append(scrim);
+}
+
+/* ---------- shared pieces ---------- */
+function choreRow(c,opts={}){
+  const st=effStatus(c),m=memberById(c.memberId),mine=c.memberId===session.memberId;
+  const acts=el("div",{class:"acts"});
+  if(c.published){
+    if(mine&&["open","in_progress","overdue","rejected"].includes(st))
+      acts.append(el("button",{class:"btn sm primary",onclick:()=>submitChore(c)},"Mark done"));
+    if(mine&&st==="open")acts.append(el("button",{class:"btn sm",onclick:()=>patch("chores",c.id,{status:"in_progress"})},"Start"));
+    if(isHost()&&st==="submitted")
+      acts.append(el("button",{class:"btn sm primary",onclick:()=>approveChore(c)},"Approve"),
+        el("button",{class:"btn sm",onclick:()=>patch("chores",c.id,{status:"rejected"})},"Send back"));
+    if(isHost()&&["open","overdue","in_progress"].includes(st))
+      acts.append(el("button",{class:"btn sm",onclick:()=>approveChore(c)},"Approve"),
+        el("button",{class:"btn sm",onclick:()=>markMissed(c)},"Not done"),
+        el("button",{class:"btn sm ghost",onclick:()=>patch("chores",c.id,{status:"excused"})},"Excuse"));
+    if(isHost()&&st==="confirmed")acts.append(el("button",{class:"btn sm ghost",onclick:()=>revokeApproval(c)},"Undo"));
+  }
+  if(isHost()&&opts.edit!==false)acts.append(el("button",{class:"btn sm ghost",onclick:()=>editChore(c)},"Edit"));
+  const meta=[c.category,c.dueDate?dayShort(c.dueDate)+" "+fmtDate(c.dueDate):null,c.time||null,
+    c.estimate?c.estimate+" min":null].filter(Boolean).join(" · ");
+  return el("div",{class:"chore"+(st==="confirmed"?" done":"")},
+    el("span",{class:"av",style:"background:"+(m?.color||"#888"),title:mName(c.memberId)},(m?.name||"?")[0].toUpperCase()),
+    el("div",{class:"main"},el("div",{class:"t"},c.title),
+      el("div",{class:"faint"},(opts.showOwner===false?"":mName(c.memberId)+" · ")+meta)),
+    el("span",{class:"pill "+STATUS[st].c},STATUS[st].l),
+    el("span",{class:"num",style:"font-weight:600;min-width:62px;text-align:right"},eur(c.amount||0)),acts);
+}
+/* Planner rows keep the common edits inline: swap the person or change the
+   amount without opening a dialog. */
+function plannerRow(c){
+  const row=el("div",{class:"chore"});
+  const who=sel(activeMembers().map(m=>[m.id,m.name]),c.memberId,"mini");
+  who.addEventListener("change",()=>patch("chores",c.id,{memberId:who.value}));
+  const amt=el("input",{class:"mini num",type:"number",step:"0.5",min:"0",value:c.amount??0,style:"width:74px"});
+  amt.addEventListener("change",()=>patch("chores",c.id,{amount:parseFloat(amt.value||"0")}));
+  const day=sel(DAYS.map((d,i)=>[addDays(weekMonday(c.weekId),i),d.slice(0,3)]),c.dueDate,"mini");
+  day.addEventListener("change",()=>patch("chores",c.id,{dueDate:day.value}));
+  row.append(el("div",{class:"main"},el("div",{class:"t"},c.title),el("div",{class:"faint"},c.category)),
+    who,day,amt,
+    el("span",{class:"pill "+STATUS[effStatus(c)].c},STATUS[effStatus(c)].l),
+    el("button",{class:"btn sm ghost",onclick:()=>editChore(c)},"More"),
+    c.published?null:el("button",{class:"btn sm danger",onclick:()=>DB.collection("chores").doc(c.id).delete()},"Remove"));
+  return row;
+}
+async function submitChore(c){
+  dialog("Mark as done",f=>{
+    const note=field(f,"Note (optional)",el("textarea",{rows:"2",placeholder:"e.g. mopped the floor too"}));
+    return{note};},async d=>{
+    await patch("chores",c.id,{status:"submitted",completedAt:Date.now(),memberNote:d.note.value.trim()});
+    toast("Submitted. The host will approve it.");},"Submit");
+}
+function editChore(c,presetWeek){
+  dialog(c?"Edit chore":"New chore",f=>{
+    const title=field(f,"Title",inp(c?.title||""));
+    const desc=field(f,"Description",el("textarea",{rows:"2"},c?.description||""));
+    const r1=el("div",{class:"row"});f.append(r1);
+    const cat=field(r1,"Category",sel(CATS,c?.category||"Other"));
+    const who=field(r1,"Assigned to",sel(activeMembers().map(m=>[m.id,m.name]),c?.memberId));
+    const r2=el("div",{class:"row"});f.append(r2);
+    const amount=field(r2,"Reward (€)",inp(c?.amount??St.settings.defaultReward,{type:"number",step:"0.5",min:"0"}));
+    const diff=field(r2,"Difficulty",sel(Object.keys(St.settings.tiers||DEFAULTS.tiers),c?.difficulty||"normal"));
+    const prio=field(r2,"Priority",sel([["normal","Normal"],["high","High"],["low","Low"]],c?.priority||"normal"));
+    const r3=el("div",{class:"row"});f.append(r3);
+    const base=c?.dueDate||(presetWeek?weekMonday(presetWeek):berlinToday());
+    const due=field(r3,"Due date",inp(base,{type:"date"}));
+    const time=field(r3,"Time",inp(c?.time||"",{type:"time"}));
+    const est=field(r3,"Duration (min)",inp(c?.estimate||"",{type:"number",min:"0",step:"5"}));
+    f.append(el("p",{class:"faint"},"If this chore is not done, the same amount is deducted from the member's balance."));
+    diff.addEventListener("change",()=>{const t=St.settings.tiers||DEFAULTS.tiers;if(t[diff.value]!=null)amount.value=t[diff.value];});
+    return{title,desc,cat,who,amount,diff,prio,due,time,est};},async d=>{
+    if(!d.title.value.trim())return toast("Add a title."),false;
+    const body={title:d.title.value.trim(),description:d.desc.value.trim(),category:d.cat.value,memberId:d.who.value,
+      amount:parseFloat(d.amount.value||"0"),difficulty:d.diff.value,priority:d.prio.value,dueDate:d.due.value,
+      time:d.time.value,estimate:d.est.value?parseInt(d.est.value):null};
+    if(c)await patch("chores",c.id,body);
+    else await put("chores",uid(),{...body,weekId:isoWeekId(d.due.value||berlinToday()),status:"planned",
+      published:false,rewardTx:null,penaltyTx:null,createdAt:Date.now()});
+  });
+}
+
+/* ---------- views ---------- */
+function viewDash(){
+  const wk=curWeek(),cs=weekChores(wk).filter(c=>c.published);
+  const done=cs.filter(c=>effStatus(c)==="confirmed"),open=cs.filter(c=>["open","in_progress","planned"].includes(effStatus(c)));
+  const late=cs.filter(c=>effStatus(c)==="overdue"),sub=cs.filter(c=>effStatus(c)==="submitted");
+  const rate=cs.length?Math.round(done.length/cs.length*100):0;
+  const wrap=el("div",{class:"stack"});
+  wrap.append(el("div",{class:"card-h"},el("h1",{},"This week"),
+    el("span",{class:"faint"},"Week "+wk.split("-W")[1]+" · "+fmtDate(mondayOf(berlinToday()))+" – "+fmtDate(addDays(mondayOf(berlinToday()),6)))));
+  if(!canWrite)wrap.append(el("div",{class:"banner"},"This view is read-only. Only people the owner invited as collaborators can save changes."));
+  wrap.append(el("div",{class:"grid g4"},
+    tile(done.length+" / "+cs.length,"Chores approved"),tile(String(open.length),"Still to do"),
+    tile(String(late.length),"Overdue"),tile(eur(poolTotal()),"Family pool")));
+  wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},el("h3",{},"Weekly progress"),el("span",{class:"num muted"},rate+" %")),
+    el("div",{class:"bar"},el("i",{style:"width:"+rate+"%"}))));
+  if(sub.length&&isHost())wrap.append(el("div",{class:"card"},
+    el("div",{class:"card-h"},el("h2",{},"Waiting for your approval"),el("span",{class:"pill warn"},sub.length)),
+    el("div",{class:"list"},...sub.map(c=>choreRow(c)))));
+  wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},el("h2",{},"The family this week")),
+    el("div",{class:"grid g3"},...activeMembers().map(m=>memberCard(m,wk)))));
+  const next=cs.filter(c=>PENDING.includes(effStatus(c))).sort((a,b)=>(a.dueDate||"").localeCompare(b.dueDate||"")).slice(0,6);
+  wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},el("h2",{},"Due next")),
+    next.length?el("div",{class:"list"},...next.map(c=>choreRow(c))):
+      el("div",{class:"empty"},el("strong",{},"Nothing outstanding"),"Every chore this week is done.")));
+  return wrap;
+}
+const tile=(v,l)=>el("div",{class:"tile"},el("div",{class:"v"},v),el("div",{class:"l"},l));
+function memberCard(m,wk){
+  const cs=weekChores(wk).filter(c=>c.published&&c.memberId===m.id);
+  const done=cs.filter(c=>effStatus(c)==="confirmed").length;
+  const pct=cs.length?Math.round(done/cs.length*100):0;
+  return el("div",{class:"tile",style:"cursor:pointer",onclick:()=>{profileId=m.id;tab="profile";render();}},
+    el("div",{class:"row",style:"align-items:center;gap:9px"},el("span",{class:"av",style:"background:"+m.color},m.name[0].toUpperCase()),
+      el("strong",{style:"margin-right:auto"},m.name),el("span",{class:"num",style:"font-weight:700"},eur(balanceOf(m.id)))),
+    el("div",{style:"height:8px"}),el("div",{class:"bar"},el("i",{style:"width:"+pct+"%"})),
+    el("div",{class:"l"},done+" of "+cs.length+" chores · "+pct+" %"));
+}
+function viewMine(){
+  const m=me(),wk=curWeek();
+  const cs=St.chores.filter(c=>c.memberId===m.id&&c.published).sort((a,b)=>(a.dueDate||"").localeCompare(b.dueDate||""));
+  const week=cs.filter(c=>c.weekId===wk);
+  const wrap=el("div",{class:"stack"});
+  wrap.append(el("h1",{},"My chores"));
+  wrap.append(el("div",{class:"grid g4"},tile(eur(balanceOf(m.id)),"My balance"),
+    tile(eur(week.filter(c=>effStatus(c)==="confirmed").reduce((a,c)=>a+c.amount,0)),"Earned this week"),
+    tile(String(week.filter(c=>PENDING.includes(effStatus(c))).length),"Still to do"),
+    tile(eur(week.filter(c=>PENDING.includes(effStatus(c))).reduce((a,c)=>a+c.amount,0)),"Still at stake")));
+  if(St.settings.penaltyEnabled)wrap.append(el("p",{class:"faint"},"Anything left undone costs the same amount it would have paid."));
+  const byDay={};for(const c of week)(byDay[c.dueDate||"none"] ||= []).push(c);
+  const days=Object.keys(byDay).sort();
+  wrap.append(...(days.length?days.map(d=>el("div",{class:"card"},
+    el("div",{class:"card-h"},el("h3",{},d==="none"?"No date":DAYS[(D(d).getUTCDay()+6)%7]+", "+fmtDate(d)),
+      d!=="none"&&d===berlinToday()?el("span",{class:"pill acc"},"Today"):null),
+    el("div",{class:"list"},...byDay[d].map(c=>choreRow(c,{edit:false,showOwner:false}))))):
+    [el("div",{class:"empty"},el("strong",{},"No chores"),"Nothing is assigned to you this week yet.")]));
+  const hist=cs.filter(c=>c.weekId!==wk).slice(0,20);
+  if(hist.length)wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},el("h2",{},"Earlier weeks")),
+    el("div",{class:"list"},...hist.map(c=>choreRow(c,{edit:false,showOwner:false})))));
+  return wrap;
+}
+function viewBoard(){
+  const wrap=el("div",{class:"stack"});
+  wrap.append(el("div",{class:"card-h"},el("h1",{},"Chore board"),
+    el("span",{class:"faint"},"Everyone's chores for this week"),
+    isHost()?el("button",{class:"btn primary",onclick:()=>editChore(null)},"New chore"):null));
+  const bar=el("div",{class:"card flat"});const r=el("div",{class:"row"});bar.append(r);
+  const fm=field(r,"Member",sel([["","Everyone"],...St.members.map(m=>[m.id,m.name])],filters.member));
+  const fc=field(r,"Category",sel([["","All"],...CATS],filters.cat));
+  const fs=field(r,"Status",sel([["","All"],...Object.entries(STATUS).map(([k,v])=>[k,v.l])],filters.status));
+  const fv=field(r,"View",sel([["person","By person"],["week","Whole week"],["day","Today"],["cal","Calendar"],["kanban","Kanban"]],filters.view));
+  for(const[k,n]of[["member",fm],["cat",fc],["status",fs],["view",fv]])n.addEventListener("change",()=>{filters[k]=n.value;render();});
+  wrap.append(bar);
+  let cs=St.chores.filter(c=>c.weekId===curWeek());
+  if(filters.member)cs=cs.filter(c=>c.memberId===filters.member);
+  if(filters.cat)cs=cs.filter(c=>c.category===filters.cat);
+  if(filters.status)cs=cs.filter(c=>effStatus(c)===filters.status);
+  if(filters.view==="day")cs=cs.filter(c=>c.dueDate===berlinToday());
+  if(!cs.length){wrap.append(el("div",{class:"empty"},el("strong",{},"Nothing here"),"No chores match these filters this week."));return wrap;}
+  const sorted=[...cs].sort((a,b)=>(a.dueDate||"").localeCompare(b.dueDate||""));
+  if(filters.view==="person"){
+    for(const m of activeMembers()){
+      const own=sorted.filter(c=>c.memberId===m.id);
+      if(!own.length)continue;
+      const done=own.filter(c=>effStatus(c)==="confirmed").length;
+      wrap.append(el("div",{class:"card"},
+        el("div",{class:"card-h"},el("span",{class:"av",style:"background:"+m.color},m.name[0].toUpperCase()),
+          el("h2",{},m.name),el("span",{class:"pill"},done+" / "+own.length+" done"),
+          el("span",{class:"num",style:"font-weight:600"},eur(balanceOf(m.id)))),
+        el("div",{class:"list"},...own.map(c=>choreRow(c,{showOwner:false})))));
+    }
+  }else if(filters.view==="kanban"){
+    const cols=[["open","To do"],["in_progress","In progress"],["submitted","Awaiting approval"],["confirmed","Approved"]];
+    wrap.append(el("div",{class:"grid g3"},...cols.map(([k,l])=>el("div",{class:"card"},
+      el("div",{class:"card-h"},el("h3",{},l),el("span",{class:"pill"},sorted.filter(c=>effStatus(c)===k).length)),
+      el("div",{class:"list"},...sorted.filter(c=>effStatus(c)===k).map(c=>choreRow(c)))))));
+  }else if(filters.view==="cal"){
+    const mon=mondayOf(berlinToday());
+    wrap.append(el("div",{class:"grid",style:"grid-template-columns:repeat(auto-fit,minmax(135px,1fr))"},
+      ...Array.from({length:7},(_,i)=>{const d=addDays(mon,i);const day=sorted.filter(c=>c.dueDate===d);
+        return el("div",{class:"card",style:"padding:11px"},el("div",{class:"eyebrow"},DAYS[i].slice(0,3)+" "+fmtDate(d)),
+          el("div",{style:"height:7px"}),...(day.length?day.map(c=>el("div",{class:"pill "+STATUS[effStatus(c)].c,
+            style:"display:flex;margin-bottom:5px;white-space:normal;cursor:pointer",
+            onclick:()=>isHost()&&editChore(c)},mName(c.memberId)+": "+c.title)):[el("span",{class:"faint"},"—")]));})));
+  }else{
+    wrap.append(el("div",{class:"card"},el("div",{class:"list"},...sorted.map(c=>choreRow(c)))));
+  }
+  return wrap;
+}
+function viewPool(){
+  const wrap=el("div",{class:"stack"});
+  wrap.append(el("div",{class:"card-h"},el("h1",{},"Family pool"),
+    isHost()?el("button",{class:"btn primary",onclick:depositDialog},"Add money"):null));
+  const avail=availableBudget();
+  wrap.append(el("div",{class:"grid g4"},tile(eur(poolTotal()),"Total in pool"),tile(eur(reservedAmount()),"Reserved for chores"),
+    tile(eur(earnedUnpaid()),"Earned, not paid out"),
+    el("div",{class:"tile",style:avail<0?"border-color:var(--bad)":""},
+      el("div",{class:"v",style:avail<0?"color:var(--bad)":""},eur(avail)),el("div",{class:"l"},"Free to allocate"))));
+  if(avail<0)wrap.append(el("div",{class:"banner"},"The pool is over-committed. Add "+eur(-avail)+" or lower some planned rewards."));
+  wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},el("h2",{},"Member balances")),
+    el("div",{class:"grid g3"},...activeMembers().map(m=>el("div",{class:"tile"},
+      el("div",{class:"row",style:"align-items:center"},el("span",{class:"av",style:"background:"+m.color},m.name[0].toUpperCase()),
+        el("strong",{style:"margin-right:auto"},m.name)),
+      el("div",{class:"v",style:"font-size:1.3rem;margin-top:8px"},eur(balanceOf(m.id))),
+      isHost()&&balanceOf(m.id)>0?el("button",{class:"btn sm",style:"margin-top:8px",onclick:()=>payoutDialog(m)},"Pay out"):null)))));
+  const tx=[...St.tx].sort((a,b)=>b.ts-a.ts).slice(0,60);
+  wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},el("h2",{},"Transactions"),
+    isHost()?el("button",{class:"btn sm",onclick:correctionDialog},"Post correction"):null,
+    el("button",{class:"btn sm ghost",onclick:exportCsv},"Copy CSV")),
+    el("div",{class:"tblwrap"},txTable(tx))));
+  return wrap;
+}
+function txTable(tx){
+  if(!tx.length)return el("div",{class:"empty"},el("strong",{},"No entries yet"),"Entries appear here as soon as chores are approved.");
+  const t=el("table");
+  t.append(el("thead",{},el("tr",{},...["Date","Entry","Member","Amount","Balance after","Reason"].map(h=>el("th",{},h)))));
+  const b=el("tbody");
+  for(const x of tx)b.append(el("tr",{},el("td",{class:"num"},fmtDT(x.ts)),el("td",{},TXL[x.type]||x.type),
+    el("td",{},x.member?mName(x.member):"Pool"),
+    el("td",{class:"num amt "+(x.amount>=0?"pos":"neg")},(x.amount>=0?"+":"")+eur(x.amount)),
+    el("td",{class:"num muted"},x.balanceAfter!=null?eur(x.balanceAfter):"—"),
+    el("td",{class:"muted"},x.reason||"—")));
+  t.append(b);return t;
+}
+function exportCsv(){
+  const rows=[["Date","Type","Member","Amount","Balance after","Reason"],
+    ...[...St.tx].sort((a,b)=>a.ts-b.ts).map(x=>[new Date(x.ts).toISOString(),TXL[x.type]||x.type,x.member?mName(x.member):"Pool",
+      String(x.amount),x.balanceAfter!=null?String(x.balanceAfter):"",x.reason||""])];
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n");
+  navigator.clipboard?.writeText(csv).then(()=>toast("CSV copied to the clipboard.")).catch(()=>{
+    const ta=el("textarea",{style:"position:fixed;top:-500px"});ta.value=csv;document.body.append(ta);ta.select();
+    toast("Selected — press Ctrl+C to copy.");});
+}
+function depositDialog(){
+  dialog("Add money to the pool",f=>{
+    const a=field(f,"Amount (€)",inp(St.settings.weeklyBudget,{type:"number",step:"5",min:"0"}));
+    const r=field(f,"Reason",inp("Weekly budget"));return{a,r};},async d=>{
+    const v=parseFloat(d.a.value||"0");if(!(v>0))return toast("Enter an amount."),false;
+    await addTx({type:"deposit",amount:v,reason:d.r.value||"Deposit"});toast(eur(v)+" added.");},"Add");
+}
+function payoutDialog(m){
+  dialog("Pay out to "+m.name,f=>{
+    f.append(el("p",{class:"muted"},"Available balance: "+eur(balanceOf(m.id))+". This books the money out and records the payout."));
+    const a=field(f,"Amount (€)",inp(balanceOf(m.id),{type:"number",step:"0.5",min:"0"}));
+    const r=field(f,"Note",inp("Paid in cash"));return{a,r};},async d=>{
+    const v=parseFloat(d.a.value||"0");
+    if(!(v>0)||v>balanceOf(m.id)+1e-9)return toast("That is more than the balance."),false;
+    await addTx({type:"payout",amount:-v,member:m.id,reason:d.r.value||"Payout"});toast("Payout recorded.");},"Pay out");
+}
+function correctionDialog(){
+  dialog("Post a correction",f=>{
+    f.append(el("p",{class:"muted"},"Approved entries are never deleted. A correction is an extra, traceable counter-entry."));
+    const w=field(f,"Member",sel([["","Pool"],...St.members.map(m=>[m.id,m.name])],""));
+    const a=field(f,"Amount (€, negative to deduct)",inp("0",{type:"number",step:"0.5"}));
+    const r=field(f,"Reason (required)",inp(""));return{w,a,r};},async d=>{
+    const v=parseFloat(d.a.value||"0");
+    if(!v||!d.r.value.trim())return toast("Enter an amount and a reason."),false;
+    if(d.w.value&&balanceOf(d.w.value)+v<-1e-9)return toast("That would push the balance below zero."),false;
+    await addTx({type:"correction",amount:v,member:d.w.value||null,reason:d.r.value.trim()});toast("Correction posted.");},"Post");
+}
+function viewPeople(){
+  const wrap=el("div",{class:"stack"});
+  wrap.append(el("div",{class:"card-h"},el("h1",{},"Family"),
+    isHost()?el("button",{class:"btn primary",onclick:()=>editMember(null)},"Add member"):null));
+  const wk=curWeek();
+  const rank=activeMembers().map(m=>{
+    const cs=weekChores(wk).filter(c=>c.published&&c.memberId===m.id);
+    const done=cs.filter(c=>effStatus(c)==="confirmed").length;
+    return{m,cs:cs.length,done,pct:cs.length?done/cs.length:0,earned:balanceOf(m.id)};})
+    .sort((a,b)=>b.pct-a.pct||b.done-a.done);
+  wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},el("h2",{},"This week's standings"),el("span",{class:"faint"},"By completion rate")),
+    el("div",{class:"list"},...rank.map((r,i)=>el("div",{class:"chore",style:"cursor:pointer",
+      onclick:()=>{profileId=r.m.id;tab="profile";render();}},
+      el("span",{class:"pill "+(i===0&&r.pct>0?"good":"")},"#"+(i+1)),
+      el("span",{class:"av",style:"background:"+r.m.color},r.m.name[0].toUpperCase()),
+      el("div",{class:"main"},el("div",{class:"t"},r.m.name),el("div",{class:"faint"},r.done+" of "+r.cs+" done")),
+      el("div",{style:"flex:0 0 90px"},el("div",{class:"bar"},el("i",{style:"width:"+Math.round(r.pct*100)+"%"}))),
+      el("span",{class:"num",style:"font-weight:600"},eur(r.earned)))))));
+  for(const m of activeMembers()){
+    const own=weekChores(curWeek()).filter(c=>c.published&&c.memberId===m.id)
+      .sort((a,b)=>(a.dueDate||"").localeCompare(b.dueDate||""));
+    if(!own.length)continue;
+    wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},
+      el("span",{class:"av",style:"background:"+m.color},m.name[0].toUpperCase()),el("h2",{},m.name+"'s week")),
+      el("div",{class:"list"},...own.map(c=>choreRow(c,{showOwner:false})))));
+  }
+  return wrap;
+}
+function viewProfile(){
+  const m=memberById(profileId)||me();
+  const all=St.chores.filter(c=>c.memberId===m.id&&c.published);
+  const conf=all.filter(c=>effStatus(c)==="confirmed");
+  const rate=all.length?Math.round(conf.length/all.length*100):0;
+  const wk=curWeek();
+  const txs=St.tx.filter(t=>t.member===m.id).sort((a,b)=>b.ts-a.ts);
+  const wrap=el("div",{class:"stack"});
+  wrap.append(el("div",{class:"card-h"},el("span",{class:"av lg",style:"background:"+m.color},m.name[0].toUpperCase()),
+    el("h1",{},m.name),m.role==="host"?el("span",{class:"pill acc"},"Host"):null,
+    isHost()?el("button",{class:"btn sm",onclick:()=>editMember(m)},"Edit profile"):null));
+  wrap.append(el("div",{class:"grid g4"},tile(eur(balanceOf(m.id)),"Current balance"),
+    tile(eur(St.tx.filter(t=>t.member===m.id&&["reward","bonus"].includes(t.type)).reduce((a,t)=>a+t.amount,0)),"Earned in total"),
+    tile(String(conf.length),"Chores completed"),tile(rate+" %","Completion rate")));
+  const week=all.filter(c=>c.weekId===wk);
+  wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},el("h2",{},"Week at a glance")),
+    el("div",{class:"grid",style:"grid-template-columns:repeat(auto-fit,minmax(118px,1fr))"},
+      ...Array.from({length:7},(_,i)=>{const d=addDays(mondayOf(berlinToday()),i);const day=week.filter(c=>c.dueDate===d);
+        return el("div",{style:"border:1px solid var(--line);border-radius:11px;padding:9px"},
+          el("div",{class:"eyebrow"},DAYS[i].slice(0,3)+" "+fmtDate(d)),el("div",{style:"height:6px"}),
+          ...(day.length?day.map(c=>el("div",{class:"pill "+STATUS[effStatus(c)].c,
+            style:"display:flex;margin-bottom:4px;white-space:normal"},c.title)):[el("span",{class:"faint"},"—")]));}))));
+  wrap.append(el("div",{class:"card"},el("div",{class:"card-h"},el("h2",{},"Rewards and penalties")),
+    el("div",{class:"tblwrap"},txTable(txs.slice(0,40)))));
+  return wrap;
+}
+function editMember(m){
+  dialog(m?"Edit profile":"Add member",f=>{
+    const name=field(f,"Name",inp(m?.name||""));
+    const pin=field(f,"PIN (4 digits)",inp(m?.pin||"",{inputmode:"numeric",maxlength:"4"}));
+    const role=field(f,"Role",sel([["member","Family member"],["host","Host (full admin)"]],m?.role||"member"));
+    const color=field(f,"Colour",sel(AVCOL.map((c,i)=>[c,"Colour "+(i+1)]),m?.color||AVCOL[St.members.length%AVCOL.length]));
+    const active=field(f,"Status",sel([["1","Active"],["0","Disabled"]],m?.active===false?"0":"1"));
+    return{name,pin,role,color,active};},async d=>{
+    if(!d.name.value.trim()||!/^\d{4}$/.test(d.pin.value))return toast("Enter a name and a four-digit PIN."),false;
+    const body={name:d.name.value.trim(),pin:d.pin.value,role:d.role.value,color:d.color.value,active:d.active.value==="1"};
+    if(m)await patch("members",m.id,body);else await put("members",uid(),{...body,createdAt:Date.now()});
+  });
+}
+
+/* ---------- admin ---------- */
+function viewAdmin(){
+  const wrap=el("div",{class:"stack"});
+  wrap.append(el("h1",{},"Admin"));
+  wrap.append(weeklyPlanner(),templateLibrary(),settingsPanel());
+  return wrap;
+}
+function weekMonday(wk){
+  const[y,w]=wk.split("-W").map(Number);
+  const jan4=S(new Date(Date.UTC(y,0,4)));return addDays(mondayOf(jan4),(w-1)*7);
+}
+/* Quick add: one line, no dialog. Title, person, day, amount, Enter. */
+function quickAdd(wk){
+  const box=el("div",{class:"quick"});
+  const r=el("div",{class:"row"});
+  const title=el("input",{placeholder:"Add a chore and press Enter",style:"flex:3 1 220px"});
+  const who=sel(activeMembers().map(m=>[m.id,m.name]),activeMembers()[0]?.id);who.style.flex="1 1 110px";
+  const day=sel(DAYS.map((d,i)=>[addDays(weekMonday(wk),i),d.slice(0,3)]),
+    wk===curWeek()?berlinToday():weekMonday(wk));day.style.flex="0 1 90px";
+  const amt=el("input",{type:"number",step:"0.5",min:"0",value:St.settings.defaultReward,class:"num",style:"flex:0 1 90px"});
+  const cat=sel(CATS,"Other");cat.style.flex="1 1 120px";
+  const add=async()=>{
+    if(!title.value.trim())return;
+    await put("chores",uid(),{title:title.value.trim(),description:"",category:cat.value,memberId:who.value,
+      amount:parseFloat(amt.value||"0"),difficulty:"normal",priority:"normal",dueDate:day.value,time:"",estimate:null,
+      weekId:wk,status:"planned",published:false,rewardTx:null,penaltyTx:null,createdAt:Date.now()});
+    title.value="";title.focus();toast("Added to the plan.");};
+  title.addEventListener("keydown",e=>{if(e.key==="Enter")add();});
+  r.append(title,who,cat,day,amt,el("button",{class:"btn primary",onclick:add},"Add"));
+  box.append(r);
+  return box;
+}
+function weeklyPlanner(){
+  const wk=planWeek||curWeek();
+  const cs=St.chores.filter(c=>c.weekId===wk);
+  const draft=cs.filter(c=>!c.published);
+  const published=cs.filter(c=>c.published);
+  const cost=cs.reduce((a,c)=>a+(c.amount||0),0);
+  const avail=availableBudget();
+  const card=el("div",{class:"card stack"});
+  const weeks=[-1,0,1,2].map(o=>{const d=addDays(mondayOf(berlinToday()),o*7);
+    return[isoWeekId(d),"Week "+isoWeekId(d).split("-W")[1]+" from "+fmtDate(d)];});
+  const picker=sel(weeks,wk);picker.addEventListener("change",()=>{planWeek=picker.value;render();});
+  card.append(el("div",{class:"card-h"},el("h2",{},"Weekly planner"),el("div",{style:"max-width:220px;width:100%"},picker)));
+  card.append(el("div",{class:"grid g4"},tile(String(cs.length),"Chores in the week"),tile(eur(cost),"Planned rewards"),
+    tile(eur(avail),"Free to allocate"),tile(String(published.length),"Already published")));
+  card.append(quickAdd(wk));
+  card.append(el("div",{class:"row"},
+    el("button",{class:"btn",onclick:()=>copyPreviousWeek(wk)},"Copy last week"),
+    el("button",{class:"btn",onclick:()=>generateRecurring(wk)},"Add recurring"),
+    el("button",{class:"btn",onclick:()=>autoDistribute(wk)},"Spread evenly"),
+    el("button",{class:"btn ghost",onclick:()=>editChore(null,wk)},"Detailed chore"),
+    el("button",{class:"btn primary",disabled:draft.length===0,onclick:()=>publishWeek(wk)},
+      draft.length?"Publish week ("+draft.length+")":"Nothing new to publish")));
+  card.append(el("div",{class:"sep"}));
+  if(!cs.length)card.append(el("div",{class:"empty"},el("strong",{},"This week is empty"),
+    "Type a chore above, copy last week, or add the recurring ones."));
+  else card.append(el("div",{class:"list"},
+    ...[...cs].sort((a,b)=>(a.dueDate||"").localeCompare(b.dueDate||"")).map(plannerRow)));
+  return card;
+}
+async function copyPreviousWeek(wk){
+  const prev=isoWeekId(addDays(weekMonday(wk),-7));
+  const src=St.chores.filter(c=>c.weekId===prev);
+  if(!src.length)return toast("Last week has no chores to copy.");
+  let n=0;
+  for(const c of src){
+    const dup=St.chores.some(x=>x.weekId===wk&&x.title===c.title&&x.memberId===c.memberId&&
+      (!c.dueDate||!x.dueDate||dayShort(x.dueDate)===dayShort(c.dueDate)));
+    if(dup)continue;
+    const off=c.dueDate?(D(c.dueDate)-D(weekMonday(prev)))/864e5:0;
+    await put("chores",uid(),{title:c.title,description:c.description||"",category:c.category,memberId:c.memberId,
+      amount:c.amount,difficulty:c.difficulty,priority:c.priority||"normal",estimate:c.estimate||null,time:c.time||"",
+      dueDate:c.dueDate?addDays(weekMonday(wk),off):null,weekId:wk,status:"planned",published:false,rewardTx:null,
+      penaltyTx:null,sourceTemplate:c.sourceTemplate||null,createdAt:Date.now()});n++;}
+  toast(n?n+" chores copied.":"Everything was already there.");
+}
+/* Recurring generation is idempotent: a template already present in the week
+   on the same day is skipped, so pressing the button twice changes nothing. */
+async function generateRecurring(wk){
+  const mon=weekMonday(wk);let n=0;
+  for(const t of St.templates.filter(t=>t.active!==false)){
+    let days=[];
+    if(t.recurrence==="daily")days=[0,1,2,3,4,5,6];
+    else if(t.recurrence==="weekdays")days=(t.weekdays||[]).slice();
+    else if(t.recurrence==="weekly")days=[(t.weekdays||[])[0]??0];
+    else if(t.recurrence==="biweekly"){if(Number(wk.split("-W")[1])%2)continue;days=[(t.weekdays||[])[0]??0];}
+    else if(t.recurrence==="monthly"){if(D(mon).getUTCDate()>7)continue;days=[(t.weekdays||[])[0]??0];}
+    else continue;
+    for(const d of days){
+      const date=addDays(mon,d);
+      if(St.chores.some(c=>c.weekId===wk&&c.sourceTemplate===t.id&&c.dueDate===date))continue;
+      await put("chores",uid(),{title:t.title,description:t.description||"",category:t.category,
+        memberId:t.memberId||activeMembers()[0]?.id,amount:t.amount,difficulty:t.difficulty||"normal",priority:"normal",
+        estimate:t.estimate||null,time:t.time||"",dueDate:date,weekId:wk,status:"planned",published:false,
+        rewardTx:null,penaltyTx:null,sourceTemplate:t.id,createdAt:Date.now()});n++;}
+  }
+  toast(n?n+" recurring chores added.":"All recurring chores are already planned.");
+}
+async function autoDistribute(wk){
+  const ms=activeMembers();if(!ms.length)return;
+  const cs=St.chores.filter(c=>c.weekId===wk&&!c.published);
+  let i=0;for(const c of cs){await patch("chores",c.id,{memberId:ms[i%ms.length].id});i++;}
+  toast(cs.length+" chores spread evenly.");
+}
+async function publishWeek(wk){
+  const draft=St.chores.filter(c=>c.weekId===wk&&!c.published);
+  const need=draft.reduce((a,c)=>a+(c.amount||0),0);
+  if(need>availableBudget()+1e-9)
+    return toast("Not enough free budget: "+eur(need)+" needed, "+eur(availableBudget())+" available.");
+  const existing=St.weeks.find(w=>w.id===wk);
+  if(existing&&existing.status==="closed")return toast("This week is closed and will not be overwritten.");
+  for(const c of draft)await patch("chores",c.id,{published:true,status:"open"});
+  await put("weeks",wk,{id:wk,status:"published",publishedAt:Date.now(),monday:weekMonday(wk)});
+  toast("Week published. Everyone can see their plan now.");
+}
+const RECL={once:"One-off",daily:"Daily",weekdays:"Chosen weekdays",weekly:"Weekly",biweekly:"Every two weeks",monthly:"Monthly"};
+function templateLibrary(){
+  const wk=planWeek||curWeek();
+  const card=el("div",{class:"card stack"});
+  card.append(el("div",{class:"card-h"},el("h2",{},"Chore library"),el("span",{class:"faint"},"Tap a chore to drop it into the selected week"),
+    el("button",{class:"btn sm",onclick:()=>editTemplate(null)},"New template")));
+  if(!St.templates.length)card.append(el("div",{class:"empty"},el("strong",{},"No templates yet"),
+    "Templates generate the recurring chores for every new week."));
+  else card.append(el("div",{class:"list"},...St.templates.map(t=>el("div",{class:"chore"},
+    el("div",{class:"main"},el("div",{class:"t"},t.title),
+      el("div",{class:"faint"},[t.category,RECL[t.recurrence]||t.recurrence,t.memberId?mName(t.memberId):"assigned when planning"].join(" · "))),
+    el("span",{class:"pill"+(t.active===false?"":" acc")},t.active===false?"Paused":"Active"),
+    el("span",{class:"num",style:"font-weight:600"},eur(t.amount||0)),
+    el("button",{class:"btn sm primary",onclick:()=>addFromTemplate(t,wk)},"Add to week"),
+    el("button",{class:"btn sm ghost",onclick:()=>editTemplate(t)},"Edit")))));
+  return card;
+}
+async function addFromTemplate(t,wk){
+  const day=wk===curWeek()?berlinToday():weekMonday(wk);
+  await put("chores",uid(),{title:t.title,description:t.description||"",category:t.category,
+    memberId:t.memberId||activeMembers()[0]?.id,amount:t.amount,difficulty:t.difficulty||"normal",priority:"normal",
+    estimate:t.estimate||null,time:t.time||"",dueDate:day,weekId:wk,status:"planned",published:false,
+    rewardTx:null,penaltyTx:null,sourceTemplate:null,createdAt:Date.now()});
+  toast(t.title+" added — change the person or day in the list above.");
+}
+function editTemplate(t){
+  dialog(t?"Edit template":"New template",f=>{
+    const title=field(f,"Title",inp(t?.title||""));
+    const r1=el("div",{class:"row"});f.append(r1);
+    const cat=field(r1,"Category",sel(CATS,t?.category||"Other"));
+    const amount=field(r1,"Reward (€)",inp(t?.amount??St.settings.defaultReward,{type:"number",step:"0.5",min:"0"}));
+    const who=field(r1,"Assigned to",sel([["","Decide when planning"],...activeMembers().map(m=>[m.id,m.name])],t?.memberId||""));
+    const rec=field(f,"Repeats",sel(Object.entries(RECL),t?.recurrence||"weekly"));
+    const dayBox=el("div",{class:"row"});
+    const boxes=DAYS.map((d,i)=>{const cb=el("input",{type:"checkbox",style:"width:auto",
+      ...((t?.weekdays||[]).includes(i)?{checked:true}:{})});
+      dayBox.append(el("label",{class:"f",style:"flex-direction:row;align-items:center;gap:5px"},cb,d.slice(0,3)));return cb;});
+    f.append(el("label",{class:"f"},"Days",dayBox));
+    const act=field(f,"Status",sel([["1","Active"],["0","Paused"]],t?.active===false?"0":"1"));
+    return{title,cat,amount,who,rec,boxes,act};},async d=>{
+    if(!d.title.value.trim())return toast("Add a title."),false;
+    const body={title:d.title.value.trim(),category:d.cat.value,amount:parseFloat(d.amount.value||"0"),
+      memberId:d.who.value||null,recurrence:d.rec.value,weekdays:d.boxes.map((b,i)=>b.checked?i:-1).filter(i=>i>=0),
+      active:d.act.value==="1"};
+    if(t)await patch("chore_templates",t.id,body);else await put("chore_templates",uid(),body);
+  });
+}
+function settingsPanel(){
+  const s=St.settings;const card=el("div",{class:"card stack"});
+  card.append(el("div",{class:"card-h"},el("h2",{},"Rules and amounts")));
+  const r1=el("div",{class:"row"});card.append(r1);
+  const bud=field(r1,"Weekly budget (€)",inp(s.weeklyBudget,{type:"number",step:"5"}));
+  const def=field(r1,"Default reward (€)",inp(s.defaultReward,{type:"number",step:"0.5"}));
+  const pen=field(r1,"Penalties",sel([["1","On"],["0","Off"]],s.penaltyEnabled?"1":"0"));
+  const r2=el("div",{class:"row"});card.append(r2);
+  const t=s.tiers||DEFAULTS.tiers;const tf={};
+  for(const k of Object.keys(DEFAULTS.tiers))tf[k]=field(r2,k[0].toUpperCase()+k.slice(1)+" (€)",inp(t[k],{type:"number",step:"0.5"}));
+  card.append(el("p",{class:"faint"},"A missed chore costs exactly what it would have paid. The deduction stops at zero: nobody can end up owing money, and an excused chore costs nothing."));
+  card.append(el("div",{class:"row"},el("button",{class:"btn primary",onclick:async()=>{
+    await setSettings({weeklyBudget:parseFloat(bud.value||"0"),defaultReward:parseFloat(def.value||"5"),
+      penaltyEnabled:pen.value==="1",
+      tiers:Object.fromEntries(Object.keys(tf).map(k=>[k,parseFloat(tf[k].value||"0")]))});
+    toast("Settings saved.");}},"Save settings")));
+  return card;
+}
+
+boot();
+</script>
+
+</body></html>
