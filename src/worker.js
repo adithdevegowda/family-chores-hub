@@ -104,7 +104,7 @@ if(match&&req.method==='POST'){
  if(action==='approve'){
  if(!['submitted','open'].includes(c.status)||c.paid)return fail('Nicht genehmigungsfähig');const p=await poolInfo(db);if(p.pool-p.owed<p.reserved)return fail('Pool nicht ausreichend gedeckt');
  // D1 batch is atomic: the conditional update and award entry commit together.
- const tx=uuid();await db.batch([db.prepare("INSERT INTO ledger(id,member_id,amount,type,chore_id,note,created) SELECT ?,member_id,amount,'reward',id,title,? FROM chores WHERE id=? AND paid=0 AND status IN ('open','submitted')").bind(tx,now(),id),db.prepare("UPDATE chores SET status='confirmed',paid=1 WHERE id=? AND paid=0 AND status IN ('open','submitted')").bind(id)]);return json({ok:true});
+ const tx=uuid();await db.batch([db.prepare("INSERT INTO ledger(id,member_id,amount,type,chore_id,note,created) SELECT ?,member_id,amount,CASE WHEN EXISTS(SELECT 1 FROM ledger x WHERE x.chore_id=chores.id AND x.type='reward') THEN 'reward_reapproval' ELSE 'reward' END,id,title,? FROM chores WHERE id=? AND paid=0 AND status IN ('open','submitted')").bind(tx,now(),id),db.prepare("UPDATE chores SET status='confirmed',paid=1 WHERE id=? AND paid=0 AND status IN ('open','submitted')").bind(id)]);return json({ok:true});
  }
 }
 if(path==='/api/deposit'&&req.method==='POST'){if(!host)return fail('Nur Host',403);const amount=Math.round(Number(body.amount)*100);if(!money(amount)||amount===0)return fail('Betrag ungültig');await db.prepare("INSERT INTO ledger(id,member_id,amount,type,note,created) VALUES(?,NULL,?,'deposit',?,?)").bind(uuid(),amount,String(body.note||'Pool-Aufladung').slice(0,160),now()).run();return json({ok:true});}
