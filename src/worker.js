@@ -34,12 +34,33 @@ const user=await getUser(req,db);if(!user)return fail('Bitte anmelden',401);cons
 if(path==='/api/state'&&req.method==='GET'){
  const [ms,cs,ls,pi]=await Promise.all([db.prepare('SELECT id,name,role,color,active FROM members').all(),db.prepare('SELECT * FROM chores ORDER BY due ASC').all(),db.prepare('SELECT * FROM ledger ORDER BY created DESC LIMIT 500').all(),poolInfo(db)]);
  const code=host?await db.prepare("SELECT val FROM config WHERE key='signup_code'").first():null;
- return json({user:userView(user),members:ms.results,chores:cs.results.map(c=>({...c,amount:c.amount/100})),ledger:ls.results.map(t=>({...t,amount:t.amount/100})),pool:Object.fromEntries(Object.entries(pi).map(([k,v])=>[k,v/100])),signupCode:code?.val||null});
+ const templatesRow=host?await db.prepare("SELECT val FROM config WHERE key='chore_templates'").first():null;
+ let templates=[];if(templatesRow){try{templates=JSON.parse(templatesRow.val)}catch{templates=[]}}
+ return json({user:userView(user),members:ms.results,chores:cs.results.map(c=>({...c,amount:c.amount/100})),ledger:ls.results.map(t=>({...t,amount:t.amount/100})),pool:Object.fromEntries(Object.entries(pi).map(([k,v])=>[k,v/100])),signupCode:code?.val||null,templates});
 }
 if(path==='/api/pin'&&req.method==='POST'){
  if(!pinOk(body.pin))return fail('Eine sechsstellige PIN verwenden');const salt=uuid();await db.prepare('UPDATE members SET salt=?,pin_hash=? WHERE id=?').bind(salt,await hashPin(body.pin,salt),user.id).run();return json({ok:true});
 }
 if(path==='/api/code'&&req.method==='POST'){if(!host)return fail('Nur Host',403);const code=String(Math.floor(10000000+crypto.getRandomValues(new Uint32Array(1))[0]%90000000));await db.prepare("UPDATE config SET val=? WHERE key='signup_code'").bind(code).run();return json({code});}
+if(path==='/api/template'&&req.method==='POST'){
+ if(!host)return fail('Host only',403);
+ const row=await db.prepare("SELECT val FROM config WHERE key='chore_templates'").first();
+ let templates=[];try{templates=JSON.parse(row?.val||'[]')}catch{return fail('Invalid template library')}
+ if(!Array.isArray(templates))return fail('Invalid template library');
+ if(body.action==='delete'){
+   templates=templates.filter(t=>t.id!==body.id);
+ }else{
+   const title=String(body.title||'').trim().slice(0,120);
+   const description=String(body.description||'').trim().slice(0,500);
+   const category=String(body.category||'Other').slice(0,30);
+   const amount=Math.round(Number(body.amount)*100);
+   if(!title||!money(amount))return fail('Invalid task template');
+   if(templates.length>=100)return fail('Maximum 100 templates');
+   templates.push({id:uuid(),title,description,category,amount:amount/100});
+ }
+ await db.prepare("INSERT INTO config(key,val) VALUES('chore_templates',?) ON CONFLICT(key) DO UPDATE SET val=excluded.val").bind(JSON.stringify(templates)).run();
+ return json({ok:true});
+}
 if(path==='/api/chore'&&req.method==='POST'){
  if(!host)return fail('Nur Host',403);const amount=Math.round(Number(body.amount)*100);if(!money(amount)||!/^\d{4}-\d{2}-\d{2}$/.test(body.due||'')||!body.title?.trim())return fail('Ungültige Aufgabe');
  if(!(await db.prepare('SELECT id FROM members WHERE id=? AND active=1').bind(body.member_id).first()))return fail('Unbekanntes Mitglied');
