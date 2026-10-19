@@ -13,7 +13,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "family-chores-hub-d"
+      "database_name": "family-chores-hub-d",
+      "database_id": "03efd28f-37ce-496e-8000-9b404aad1711"
     }
   ]
 }
