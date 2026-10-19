@@ -73,7 +73,15 @@ if(match&&req.method==='POST'){
  if(action==='submit') {if(c.member_id!==user.id&&!host)return fail('Keine Berechtigung',403);if(!['open','rejected'].includes(c.status))return fail('Nicht mehr offen');await db.prepare("UPDATE chores SET status='submitted' WHERE id=? AND status IN ('open','rejected')").bind(id).run();return json({ok:true});}
  if(!host)return fail('Nur Host',403);
  if(action==='delete'){if(c.paid)return fail('Bereits vergütete Aufgaben nicht löschen');await db.prepare('DELETE FROM chores WHERE id=?').bind(id).run();return json({ok:true});}
- if(action==='excuse'||action==='miss'){if(c.paid)return fail('Bereits bezahlt');if(!['open','submitted','rejected'].includes(c.status))return fail('Schon abgeschlossen');await db.prepare('UPDATE chores SET status=? WHERE id=?').bind(action==='miss'?'missed':'excused',id).run();return json({ok:true});}
+ if(action==='excuse'||action==='miss'){
+ if(c.paid||!['open','submitted','rejected'].includes(c.status))return fail('Chore already closed');
+ if(action==='excuse'){await db.prepare("UPDATE chores SET status='excused' WHERE id=? AND paid=0 AND status IN ('open','submitted','rejected')").bind(id).run();return json({ok:true});}
+ await db.batch([
+ db.prepare("INSERT INTO ledger(id,member_id,amount,type,chore_id,note,created) SELECT ?,member_id,-amount,'penalty',id,'Missed: '||title,? FROM chores WHERE id=? AND paid=0 AND status IN ('open','submitted','rejected')").bind(uuid(),now(),id),
+ db.prepare("UPDATE chores SET status='missed' WHERE id=? AND paid=0 AND status IN ('open','submitted','rejected')").bind(id)
+ ]);
+ return json({ok:true});
+}
  if(action==='approve'){
  if(!['submitted','open'].includes(c.status)||c.paid)return fail('Nicht genehmigungsfähig');const p=await poolInfo(db);if(p.pool-p.owed<p.reserved)return fail('Pool nicht ausreichend gedeckt');
  // D1 batch is atomic: the conditional update and award entry commit together.
