@@ -36,7 +36,7 @@ if(path==='/api/state'&&req.method==='GET'){
  const [ms,cs,ls,pi]=await Promise.all([db.prepare('SELECT id,name,role,color,active FROM members').all(),db.prepare('SELECT * FROM chores ORDER BY due ASC').all(),db.prepare('SELECT * FROM ledger ORDER BY created DESC LIMIT 500').all(),poolInfo(db)]);
  const code=host?await db.prepare("SELECT val FROM config WHERE key='signup_code'").first():null;
  const templatesRow=host?await db.prepare("SELECT val FROM config WHERE key='chore_templates'").first():null;
- let templates=STANDARD_CHORES;if(templatesRow){try{templates=JSON.parse(templatesRow.val)}catch{templates=STANDARD_CHORES}}
+ let templates=STANDARD_CHORES;if(templatesRow){try{const saved=JSON.parse(templatesRow.val);templates=[...STANDARD_CHORES.filter(x=>!saved.some(t=>t.title.toLowerCase()===x.title.toLowerCase())),...saved]}catch{templates=STANDARD_CHORES}}
  return json({user:userView(user),members:ms.results,chores:cs.results.map(c=>({...c,amount:c.amount/100})),ledger:ls.results.map(t=>({...t,amount:t.amount/100})),pool:Object.fromEntries(Object.entries(pi).map(([k,v])=>[k,v/100])),signupCode:code?.val||null,templates});
 }
 if(path==='/api/pin'&&req.method==='POST'){
@@ -46,7 +46,7 @@ if(path==='/api/code'&&req.method==='POST'){if(!host)return fail('Nur Host',403)
 if(path==='/api/template'&&req.method==='POST'){
  if(!host)return fail('Host only',403);
  const row=await db.prepare("SELECT val FROM config WHERE key='chore_templates'").first();
- let templates=STANDARD_CHORES.map(t=>({...t}));try{if(row)templates=JSON.parse(row.val)}catch{return fail('Invalid template library')}
+ let templates=STANDARD_CHORES.map(t=>({...t}));try{if(row){const saved=JSON.parse(row.val);templates=[...templates.filter(x=>!saved.some(t=>t.title.toLowerCase()===x.title.toLowerCase())),...saved]}}catch{return fail('Invalid template library')}
  if(!Array.isArray(templates))return fail('Invalid template library');
  if(body.action==='delete'){
    templates=templates.filter(t=>t.id!==body.id);
